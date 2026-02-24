@@ -1,0 +1,1 @@
+# BTC Monitor Skill\n\nReal-time Bitcoin bottom-fishing monitoring system.\n\n## Features\n- RSI oversold detection\n- MVRV ratio analysis\n- Miner shutdown price tracking\n- Social media panic index\n- Long-term holder behavior analysis\n\n## Installation\n\n```bash\ntar -xzf btc-monitor-skill.tar.gz\n```
