@@ -1,0 +1,42 @@
+{
+  "rsi_threshold": 30,
+  "mvrv_threshold": 1.0,
+  "check_interval": 3600,
+  "alert_level": "high",
+  "min_confidence": 0.7,
+  "indicators": {
+    "rsi": {
+      "enabled": true,
+      "weight": 0.2,
+      "timeframes": ["daily", "weekly"]
+    },
+    "mvrv": {
+      "enabled": true,
+      "weight": 0.25,
+      "threshold": 1.0
+    },
+    "miner_shutdown": {
+      "enabled": true,
+      "weight": 0.2,
+      "models": ["S19 Pro", "S21 Pro"]
+    },
+    "social_sentiment": {
+      "enabled": true,
+      "weight": 0.15,
+      "panic_threshold": 75
+    },
+    "lth_behavior": {
+      "enabled": true,
+      "weight": 0.2
+    }
+  },
+  "discord": {
+    "enabled": true,
+    "embed_color": "0xF7931A"
+  },
+  "data_sources": {
+    "coingecko": "https://api.coingecko.com/api/v3",
+    "glassnode": "https://api.glassnode.com/v1",
+    "twitter": "https://api.twitter.com/2"
+  }
+}
