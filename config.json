@@ -1,42 +1,36 @@
 {
-  "rsi_threshold": 30,
-  "mvrv_threshold": 1.0,
-  "check_interval": 3600,
-  "alert_level": "high",
-  "min_confidence": 0.7,
-  "indicators": {
-    "rsi": {
-      "enabled": true,
-      "weight": 0.2,
-      "timeframes": ["daily", "weekly"]
+  "coins": [
+    {
+      "symbol": "BTCUSDT",
+      "name": "Bitcoin",
+      "coingecko_id": "bitcoin"
     },
-    "mvrv": {
-      "enabled": true,
-      "weight": 0.25,
-      "threshold": 1.0
-    },
-    "miner_shutdown": {
-      "enabled": true,
-      "weight": 0.2,
-      "models": ["S19 Pro", "S21 Pro"]
-    },
-    "social_sentiment": {
-      "enabled": true,
-      "weight": 0.15,
-      "panic_threshold": 75
-    },
-    "lth_behavior": {
-      "enabled": true,
-      "weight": 0.2
+    {
+      "symbol": "ETHUSDT",
+      "name": "Ethereum",
+      "coingecko_id": "ethereum"
     }
+  ],
+  "binance": {
+    "interval": "1w",
+    "limit": 100,
+    "quote_currency": "USDT"
+  },
+  "thresholds": {
+    "rsi_max": 30.0,
+    "volume_ratio_max": 0.7,
+    "fear_greed_max": 25,
+    "mvrv_proxy_max": 1.0,
+    "lower_band_buffer": 1.05
   },
   "discord": {
-    "enabled": true,
-    "embed_color": "0xF7931A"
+    "enabled": false,
+    "token_env": "DISCORD_TOKEN",
+    "channel_id": "",
+    "mention_user_id": ""
   },
-  "data_sources": {
-    "coingecko": "https://api.coingecko.com/api/v3",
-    "glassnode": "https://api.glassnode.com/v1",
-    "twitter": "https://api.twitter.com/2"
+  "schedule": "0 8 * * *",
+  "runtime": {
+    "request_timeout_seconds": 10
   }
 }

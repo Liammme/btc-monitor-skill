@@ -1,382 +1,166 @@
-# BTC Monitor Skill 🪙
+# BTC Monitor Skill
 
-Real-time Bitcoin bottom-fishing monitoring system powered by AI agents and 7 real technical indicators.
+`btc-monitor-skill` is a Python skill that monitors BTC/ETH with public market APIs and can optionally post a plain-text report to Discord.
 
-## 🎯 What is BTC Monitor Skill?
+It is now aligned around one implementation:
 
-BTC Monitor Skill is an intelligent, production-ready monitoring system that tracks Bitcoin market data in real-time and identifies optimal entry points for bottom-fishing strategies. It combines **7 real technical indicators**, **100% free data sources**, and **Kimi K2 deep analysis** to provide actionable trading signals with 6/6 confidence level.
+- Runtime entry: `scripts/monitor.py`
+- Config file: `config.json`
+- Install helper: `scripts/install.sh`
+- Scheduler helper: `scripts/setup_cron.sh`
 
-**Current Version**: v6 (Production Ready)  
-**Status**: ✅ Active Development  
-**Last Updated**: 2026-02-25
+## Implemented Features
 
----
+- Weekly candle fetch for configured coins, preferring Binance, then Bybit, then CoinGecko-derived fallback
+- CoinGecko market cap, 24h volume, ATH/ATL, and 365-day history fetch
+- Fear & Greed Index fetch from Alternative.me
+- 6 implemented signals:
+  - RSI oversold
+  - Volume washout
+  - MACD histogram below zero
+  - Price near lower Bollinger band
+  - Extreme fear
+  - Low MVRV proxy
+- Plain-text report to stdout
+- Optional Discord posting via bot token
 
-## ✨ v6 Features (Latest)
+## Not Implemented
 
-### 🔍 7 Real Technical Indicators
-1. **RSI (Relative Strength Index)** — Oversold detection (RSI < 30)
-2. **MVRV Ratio** — Market vs Realized Value analysis (< 1.0 = accumulation)
-3. **Miner Shutdown Price** — Mining profitability threshold tracking
-4. **Social Media Panic Index** — Twitter/Reddit sentiment analysis (> 75 = fear)
-5. **Long-term Holder Behavior** — Whale accumulation patterns
-6. **Volume Analysis** — Trading volume pattern recognition
-7. **Support/Resistance Levels** — Key price zone identification
+The repository previously claimed several capabilities that were not present in code. Those claims have been removed. This project does not currently include:
 
-### 💰 100% Free Data Sources
-- **CoinGecko API** — Market data (no auth required for basic endpoints)
-- **Glassnode API** — On-chain metrics (free tier available)
-- **Twitter API v2** — Social sentiment analysis
-- **No premium subscriptions required**
+- Glassnode integration
+- Twitter/Reddit sentiment integration
+- Miner shutdown price modeling
+- Long-term holder analytics
+- Kimi or any other LLM integration
+- In-process scheduling beyond external cron/task schedulers
 
-### 🎯 Signal Strength: 6/6
-- Maximum confidence level
-- All indicators aligned
-- High-probability entry signals
-- Historical accuracy: 87% (backtested)
+## Requirements
 
-### 🧠 Kimi K2 Deep Analysis
-- Long-context model integration (250k tokens)
-- Comprehensive market analysis
-- Strategic recommendations
-- Historical pattern matching
-- Automated daily reports at 8:00 AM
+- Python 3.10+
+- `requests` from `requirements.txt`
+- Optional: a Discord bot token if you want channel delivery
 
-### 🤖 Automated Daily Reports
-- Scheduled execution: 8:00 AM GMT+8 daily
-- Discord channel integration
-- Real-time alerts
-- Formatted analysis reports
-- Multi-indicator consensus
-
----
-
-## 🚀 Quick Start
-
-### Installation
+## Quick Start
 
 ```bash
-# Extract the skill package
-tar -xzf releases/btc-monitor-skill-v6.tar.gz
-
-# Install dependencies
+git clone https://github.com/Liammme/btc-monitor-skill
 cd btc-monitor-skill
-npm install
+python3 -m pip install -r requirements.txt
+python3 scripts/monitor.py
 ```
 
-### Configuration
+Or use the install helper:
 
-1. Create `.env` file:
-```env
-DISCORD_TOKEN=your_bot_token
-DISCORD_CHANNEL_ID=your_channel_id
-COINGECKO_API_KEY=optional_for_higher_limits
-GLASSNODE_API_KEY=your_glassnode_key
-TWITTER_API_KEY=your_twitter_key
-KIMI_API_KEY=your_kimi_k2_key
+```bash
+bash scripts/install.sh
+python3 scripts/monitor.py
 ```
 
-2. Configure monitoring parameters in `config.json`:
+## Configuration
+
+Edit `config.json`:
+
 ```json
 {
-  "rsi_threshold": 30,
-  "mvrv_threshold": 1.0,
-  "check_interval": 3600,
-  "alert_level": "high",
-  "min_confidence": 0.7
+  "coins": [
+    {"symbol": "BTCUSDT", "name": "Bitcoin", "coingecko_id": "bitcoin"},
+    {"symbol": "ETHUSDT", "name": "Ethereum", "coingecko_id": "ethereum"}
+  ],
+  "thresholds": {
+    "rsi_max": 30.0,
+    "volume_ratio_max": 0.7,
+    "fear_greed_max": 25,
+    "mvrv_proxy_max": 1.0,
+    "lower_band_buffer": 1.05
+  },
+  "discord": {
+    "enabled": false,
+    "token_env": "DISCORD_TOKEN",
+    "channel_id": "",
+    "mention_user_id": ""
+  },
+  "schedule": "0 8 * * *"
 }
 ```
 
-### Running
+### Discord Delivery
+
+To enable Discord delivery:
+
+1. Set `"discord.enabled": true`
+2. Set `"discord.channel_id"` to the destination channel
+3. Export the token expected by `"discord.token_env"`:
 
 ```bash
-# Development mode (with auto-reload)
-npm run dev
-
-# Production mode
-npm start
-
-# Run tests
-npm test
-
-# Check code style
-npm run lint
+export DISCORD_TOKEN=your_bot_token
+python3 scripts/monitor.py
 ```
 
----
+The script posts directly to the Discord channel using the bot token. It does not use `discord.js`.
 
-## 📊 How It Works
+## Scheduling
 
-### 1. Data Collection
-System automatically collects data from multiple sources every hour:
-- Real-time BTC price and volume
-- On-chain metrics (MVRV, LTH behavior)
-- Social sentiment (Twitter panic index)
-- Mining profitability data
+The script runs once per invocation. Use cron or another scheduler.
 
-### 2. Indicator Analysis
-All 7 indicators are calculated and weighted:
-```
-Signal Strength = (RSI × 0.2) + (MVRV × 0.25) + (Miner × 0.2) + 
-                  (Sentiment × 0.15) + (LTH × 0.2)
+Linux/macOS cron helper:
+
+```bash
+bash scripts/setup_cron.sh
 ```
 
-### 3. Signal Generation
-- **4+ indicators triggered** → Batch accumulation signal
-- **5+ indicators triggered** → Heavy accumulation signal
-- **All 6 indicators triggered** → Maximum opportunity signal
+The helper reads the `schedule` field from `config.json` and appends a cron entry that logs to `logs/monitor.log`.
 
-### 4. Kimi K2 Analysis
-Deep analysis model provides:
-- Market context and historical patterns
-- Risk assessment
-- Strategic recommendations
-- Confidence scoring
+## Report Fields
 
-### 5. Discord Alert
-Formatted message sent to your Discord channel with:
-- Signal strength (1-6)
-- Individual indicator status
-- Kimi K2 analysis
-- Recommended action
+- `Price`: latest close from the most recent market candle, preferring Binance, then Bybit, then CoinGecko-derived weekly candles
+- `Weekly change`: percentage change from the previous weekly candle
+- `RSI(14)`: Wilder RSI on close prices
+- `MACD / signal / hist`: EMA-based MACD values
+- `Bollinger lower / mid / upper`: 20-period Bollinger Bands
+- `Volume ratio`: latest quote volume divided by the 30-period average
+- `Support / resistance`: min/max close over the recent 20 candles
+- `Fear & Greed`: latest Alternative.me value
+- `MVRV proxy`: `market_cap / (365d average price * circulating_supply)`
 
----
+## Example Run
 
-## 📈 Performance Metrics
+```text
+BTC Monitor Report
+Generated: 2026-03-10 13:00:00 CST
 
-| Metric | Value |
-|--------|-------|
-| Signal Accuracy | 87% (historical backtest) |
-| False Positive Rate | 8% |
-| Average Response Time | 2.3 seconds |
-| Uptime | 99.8% |
-| Data Freshness | < 1 hour |
-
----
-
-## 🔔 Alert Examples
-
-### Low Signal (2/6)
-```
-🪙 BTC Monitor Alert
-Signal Strength: 2/6 ⚠️
-
-Indicators:
-✅ RSI: 28 (Oversold)
-❌ MVRV: 1.2 (Not yet)
-❌ Miner Price: Above threshold
-❌ Sentiment: Neutral
-❌ LTH: Stable
-
-Recommendation: WAIT - Not enough signals aligned
+Bitcoin (BTCUSDT)
+  Price: $82,000.00
+  Weekly change: -3.40%
+  ...
 ```
 
-### High Signal (5/6)
-```
-🪙 BTC Monitor Alert
-Signal Strength: 5/6 🔥
+## Repository Layout
 
-Indicators:
-✅ RSI: 25 (Extreme Oversold)
-✅ MVRV: 0.95 (Capitulation)
-✅ Miner Price: Near shutdown
-✅ Sentiment: Panic (82)
-✅ LTH: Accumulating
-❌ Volume: Normal
-
-Kimi K2 Analysis:
-Historical pattern matches 2022 bottom formation.
-Whale accumulation detected. Strong buy signal.
-
-Recommendation: ACCUMULATE - High confidence entry
-```
-
----
-
-## 🛠️ Architecture
-
-```
+```text
 btc-monitor-skill/
-├── src/
-│   ├── monitor_v6.py          # Main v6 monitoring script
-│   ├── indicators/
-│   │   ├── rsi.js
-│   │   ├── mvrv.js
-│   │   ├── miner-price.js
-│   │   ├── sentiment.js
-│   │   └── lth-behavior.js
-│   ├── discord/
-│   │   ├── client.js
-│   │   └── alerts.js
-│   ├── data/
-│   │   ├── coingecko.js
-│   │   └── glassnode.js
-│   └── index.js
-├── releases/
-│   └── btc-monitor-skill-v6.tar.gz
+├── SKILL.md
+├── README.md
 ├── config.json
-├── package.json
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── SECURITY_AUDIT.md
-└── README.md
+├── requirements.txt
+├── scripts/
+│   ├── monitor.py
+│   ├── install.sh
+│   └── setup_cron.sh
+├── docs/
+│   ├── README.md
+│   └── TROUBLESHOOTING.md
+└── releases/
 ```
 
----
+## Development
 
-## 🔗 Integration with OpenClaw
+Validate syntax:
 
-This skill is designed to work with OpenClaw's agent framework:
-
-```javascript
-// In your OpenClaw agent config
-{
-  "skills": {
-    "btc-monitor": {
-      "enabled": true,
-      "config": "./config.json",
-      "model": "moonshot/kimi-k2.5"
-    }
-  }
-}
+```bash
+python3 -m py_compile scripts/monitor.py
 ```
 
----
+## Changelog
 
-## 📚 API Reference
-
-### `checkBTCSignals()`
-Analyzes all indicators and returns combined signal strength.
-
-```javascript
-const signal = await checkBTCSignals();
-// Returns: { 
-//   strength: 0-6, 
-//   indicators: [...], 
-//   recommendation: "buy|accumulate|wait",
-//   confidence: 0.87
-// }
-```
-
-### `sendAlert(signal, analysis)`
-Sends formatted alert to Discord channel.
-
-```javascript
-await sendAlert(signal, kimiAnalysis);
-```
-
-### `getIndicatorStatus()`
-Get current status of all 7 indicators.
-
-```javascript
-const status = await getIndicatorStatus();
-// Returns individual indicator values and thresholds
-```
-
----
-
-## ⚙️ Configuration Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `rsi_threshold` | number | 30 | RSI oversold threshold |
-| `mvrv_threshold` | number | 1.0 | MVRV ratio threshold |
-| `check_interval` | number | 3600 | Check frequency (seconds) |
-| `alert_level` | string | "high" | Alert sensitivity |
-| `min_confidence` | number | 0.7 | Minimum confidence for alerts |
-| `daily_report_time` | string | "08:00" | Daily report time (GMT+8) |
-
----
-
-## 🔄 Version History
-
-### v6 (Current) - 2026-02-25
-✅ **Production Ready**
-- 7 real technical indicators fully integrated
-- Kimi K2 deep analysis
-- Automated daily reports (8:00 AM)
-- 100% free data sources
-- Signal accuracy: 87%
-- Security audit passed
-
-### v5
-- Initial multi-indicator framework
-- Basic Discord integration
-
-### v4
-- MVRV ratio implementation
-- Social sentiment analysis
-
-### v3
-- RSI oversold detection
-- Miner price tracking
-
-### v2
-- Discord bot foundation
-- API integration setup
-
-### v1
-- Project initialization
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed history.
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
-
-## 🔒 Security
-
-This project has passed security audit. See [SECURITY_AUDIT.md](SECURITY_AUDIT.md) for details.
-
-**Key Points**:
-- ✅ No hardcoded credentials
-- ✅ All dependencies verified
-- ✅ Safe for open source
-- ✅ Production-ready
-
----
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE) for details.
-
----
-
-## 📞 Support & Resources
-
-- **Issues**: [GitHub Issues](https://github.com/Liammme/btc-monitor-skill/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Liammme/btc-monitor-skill/discussions)
-- **Email**: xiki@openclaw.local
-
-### Learning Resources
-- [Bitcoin On-Chain Analysis](https://glassnode.com)
-- [CoinGecko API Docs](https://www.coingecko.com/api)
-- [RSI Indicator Guide](https://www.investopedia.com/terms/r/rsi.asp)
-- [MVRV Ratio Explained](https://www.glassnode.com/metrics/mvrv)
-- [Kimi K2 Documentation](https://platform.moonshot.cn)
-
----
-
-## 🚀 Roadmap
-
-### v7 (Planned)
-- [ ] Machine learning signal prediction
-- [ ] Multi-exchange support (Binance, Kraken, etc.)
-- [ ] Advanced portfolio tracking
-- [ ] Mobile app integration
-
-### v8 (Future)
-- [ ] Real-time trading execution
-- [ ] Risk management system
-- [ ] Advanced backtesting engine
-- [ ] Community signal sharing
-
----
-
-**Made with ❤️ by xiki**  
-**Last Updated**: 2026-02-25  
-**Status**: ✅ Production Ready
+See `CHANGELOG.md`.
