@@ -1,12 +1,18 @@
-# BTC Monitor Skill
+---
+name: btc-monitor-talentversex
+description: BTC and ETH market monitor with public API data, six bottom-fishing signals, and optional Discord delivery. TalentverseX
+metadata: { "openclaw": { "homepage": "https://github.com/Liammme/btc-monitor-skill", "os": ["linux", "darwin", "win32"], "requires": { "bins": ["python3"] } } }
+---
 
-Monitor BTC/ETH market conditions with public APIs and optionally send a text report to Discord.
+# BTC Monitor TalentverseX
 
-## What It Does
+Use this skill when the user wants a quick BTC/ETH market-monitoring report based on public APIs, especially for oversold or bottom-fishing style checks.
 
-- Pulls weekly OHLCV data from Binance, with CoinGecko-derived weekly fallback when Binance is unavailable.
-- Pulls market cap, volume, ATH/ATL, and price history from CoinGecko.
-- Pulls the crypto Fear & Greed Index from Alternative.me.
+## What This Skill Does
+
+- Reads runtime settings from `{baseDir}/config.json`
+- Fetches BTC/ETH market candles, preferring Binance, then Bybit, then CoinGecko-derived fallback
+- Fetches CoinGecko market metadata and the Fear & Greed Index
 - Computes 6 implemented signals:
   - RSI oversold
   - Volume washout
@@ -14,36 +20,59 @@ Monitor BTC/ETH market conditions with public APIs and optionally send a text re
   - Price near lower Bollinger band
   - Extreme fear
   - Low MVRV proxy
-- Prints a text report to stdout.
-- Optionally posts the report to a Discord channel by bot token.
+- Prints a plain-text report
+- Optionally posts the report to Discord if enabled in config and the bot token exists in the environment
 
-## What It Does Not Do
+## What This Skill Does Not Do
 
-- It does not use Glassnode, Twitter, Reddit, or any LLM/Kimi integration.
-- It does not execute trades.
-- The MVRV value is a proxy based on CoinGecko history, not a true on-chain realized-cap metric.
+- It does not place trades
+- It does not use Glassnode, Twitter, Reddit, or any LLM integration
+- It does not provide a true on-chain MVRV metric; `MVRV proxy` is an approximation from CoinGecko history
 
 ## Files
 
-- `scripts/monitor.py`: main executable
-- `config.json`: runtime configuration
-- `scripts/install.sh`: dependency install helper
-- `scripts/setup_cron.sh`: cron registration helper
-- `docs/TROUBLESHOOTING.md`: common failure modes
+- `{baseDir}/scripts/monitor.py`: main executable
+- `{baseDir}/config.json`: runtime configuration
+- `{baseDir}/requirements.txt`: Python dependency list
+- `{baseDir}/scripts/install.sh`: optional install helper for bash environments
+- `{baseDir}/scripts/setup_cron.sh`: optional cron helper for bash environments
+- `{baseDir}/docs/TROUBLESHOOTING.md`: troubleshooting notes
 
-## Quick Start
+## How To Run
+
+Install dependencies:
 
 ```bash
-bash scripts/install.sh
-python3 scripts/monitor.py
+python3 -m pip install -r {baseDir}/requirements.txt
 ```
 
-To enable Discord delivery:
+Run once:
 
-1. Set `"discord.enabled": true` in `config.json`
-2. Set `"discord.channel_id"` in `config.json`
-3. Export `DISCORD_TOKEN`
+```bash
+python3 {baseDir}/scripts/monitor.py
+```
 
-## Cron
+## Discord Delivery
 
-The script does not self-schedule. Use cron with `scripts/setup_cron.sh` or another scheduler.
+To send the report to Discord:
+
+1. Set `"discord.enabled": true` in `{baseDir}/config.json`
+2. Set `"discord.channel_id"` in `{baseDir}/config.json`
+3. Export the env var named by `"discord.token_env"` before running the script
+
+Example:
+
+```bash
+export DISCORD_TOKEN=your_bot_token
+python3 {baseDir}/scripts/monitor.py
+```
+
+## When To Use It
+
+- Daily or scheduled BTC/ETH market summaries
+- Quick oversold-signal checks
+- Lightweight Discord alerts using only public data sources
+
+## Scheduling
+
+The script runs once per invocation. Use cron, Task Scheduler, or another external scheduler if the user wants recurring execution.

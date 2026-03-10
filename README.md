@@ -161,6 +161,22 @@ Validate syntax:
 python3 -m py_compile scripts/monitor.py
 ```
 
+## Publish To ClawHub
+
+This repository now includes a ClawHub-compatible `SKILL.md` with the OpenClaw frontmatter format.
+
+Recommended publish command:
+
+```bash
+clawhub publish . --slug btc-monitor-talentversex --name "BTC Monitor TalentverseX" --version 4.0.0 --tags latest --changelog "Initial ClawHub release"
+```
+
+Later updates:
+
+```bash
+clawhub publish . --slug btc-monitor-talentversex --name "BTC Monitor TalentverseX" --version 4.0.1 --tags latest --changelog "Update skill implementation"
+```
+
 ## Changelog
 
 See `CHANGELOG.md`.
