@@ -1,7 +1,6 @@
 ---
 name: btc-monitor-talentversex
 description: BTC and ETH market monitor with public API data, six bottom-fishing signals, and optional Discord delivery. TalentverseX
-metadata: { "openclaw": { "homepage": "https://github.com/Liammme/btc-monitor-skill", "os": ["linux", "darwin", "win32"], "requires": { "bins": ["python3"] } } }
 ---
 
 # BTC Monitor TalentverseX
